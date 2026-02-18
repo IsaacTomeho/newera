@@ -7,7 +7,6 @@ This repository contains autonomous product experiments and implementation sprin
 
 ## DayDrive features
 - Start your day with a persistent workspace.
-- Add manual tasks for planning.
 - Add command tasks that actually execute.
 - Run pending command tasks and capture outcomes.
 - Generate end-of-day reviews with failures and git snapshot.
@@ -15,9 +14,10 @@ This repository contains autonomous product experiments and implementation sprin
 ## Usage
 ```bash
 python -m daydrive.cli start
-python -m daydrive.cli add "Draft launch copy"
-python -m daydrive.cli add "Run tests" --kind command --cmd "python -m unittest discover -s tests -p 'test_*.py'"
+python -m daydrive.cli add "python -m unittest discover -s tests -p 'test_*.py'" --name "Run tests"
+python -m daydrive.cli add "npm run build"
 python -m daydrive.cli run
+python -m daydrive.cli run --limit 1
 python -m daydrive.cli list
 python -m daydrive.cli review
 ```

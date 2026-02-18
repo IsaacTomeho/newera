@@ -71,19 +71,17 @@ def normalize_payload(payload: dict) -> dict:
     return payload
 
 
-def add_task(payload: dict, text: str, kind: str = "manual", command: str = "") -> dict:
+def add_task(payload: dict, text: str, command: str = "") -> dict:
     normalize_payload(payload)
     next_id = max((task["id"] for task in payload["tasks"]), default=0) + 1
 
-    command_text = command.strip()
-    if kind == "command" and not command_text:
-        command_text = text.strip()
+    command_text = command.strip() or text.strip()
 
     payload["tasks"].append(
         {
             "id": next_id,
             "text": text.strip(),
-            "kind": kind,
+            "kind": "command",
             "command": command_text,
             "status": "pending",
             "done": False,
@@ -125,7 +123,7 @@ def summarize_tasks(payload: dict) -> tuple[int, int]:
 def list_tasks(payload: dict) -> str:
     normalize_payload(payload)
     if not payload["tasks"]:
-        return "No tasks yet. Add one with: daydrive add \"task\""
+        return "No tasks yet. Add one with: daydrive add \"echo hello\""
 
     icons = {"pending": " ", "running": "~", "done": "x", "failed": "!"}
     lines = []

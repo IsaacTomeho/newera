@@ -58,7 +58,7 @@ class DayDriveCoreTests(unittest.TestCase):
 
     def test_execute_pending_commands_success(self) -> None:
         payload = {"tasks": [], "notes": [], "date": date.today().isoformat()}
-        payload = add_task(payload, "Print ok", kind="command", command="echo ok")
+        payload = add_task(payload, "Print ok", command="echo ok")
 
         with tempfile.TemporaryDirectory() as tmp:
             payload, results = execute_pending_commands(payload, Path(tmp), run_all=True)
@@ -70,7 +70,7 @@ class DayDriveCoreTests(unittest.TestCase):
 
     def test_execute_pending_commands_failure(self) -> None:
         payload = {"tasks": [], "notes": [], "date": date.today().isoformat()}
-        payload = add_task(payload, "Fail command", kind="command", command="exit 2")
+        payload = add_task(payload, "Fail command", command="exit 2")
 
         with tempfile.TemporaryDirectory() as tmp:
             payload, results = execute_pending_commands(payload, Path(tmp), run_all=True)
@@ -89,6 +89,12 @@ class DayDriveCoreTests(unittest.TestCase):
         normalize_payload(payload)
         self.assertEqual(payload["tasks"][0]["status"], "done")
         self.assertEqual(payload["tasks"][0]["kind"], "manual")
+
+    def test_add_task_defaults_to_command_task(self) -> None:
+        payload = {"tasks": [], "notes": [], "date": date.today().isoformat()}
+        payload = add_task(payload, "echo hello")
+        self.assertEqual(payload["tasks"][0]["kind"], "command")
+        self.assertEqual(payload["tasks"][0]["command"], "echo hello")
 
 
 if __name__ == "__main__":

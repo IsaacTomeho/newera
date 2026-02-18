@@ -22,15 +22,9 @@ def parse_args() -> argparse.Namespace:
 
     sub.add_parser("start", help="Initialize today and print morning brief")
 
-    add = sub.add_parser("add", help="Add a task for today")
-    add.add_argument("text", help="Task text")
-    add.add_argument(
-        "--kind",
-        choices=["manual", "command"],
-        default="manual",
-        help="Task type: manual tracking or executable command",
-    )
-    add.add_argument("--cmd", default="", help="Shell command to run for command tasks")
+    add = sub.add_parser("add", help="Add a command task for today")
+    add.add_argument("task_cmd", help="Shell command to run")
+    add.add_argument("--name", default="", help="Optional short label for the task")
 
     note = sub.add_parser("note", help="Capture a quick note")
     note.add_argument("text", help="Note text")
@@ -41,8 +35,7 @@ def parse_args() -> argparse.Namespace:
     sub.add_parser("list", help="List today's tasks")
 
     run = sub.add_parser("run", help="Execute pending command tasks")
-    run.add_argument("--all", action="store_true", help="Run all pending command tasks")
-    run.add_argument("--limit", type=int, default=1, help="Max pending command tasks to run")
+    run.add_argument("--limit", type=int, default=0, help="Optional max number of tasks to run")
     run.add_argument("--timeout", type=int, default=600, help="Command timeout in seconds")
 
     sub.add_parser("review", help="Generate end-of-day review markdown")
@@ -60,15 +53,15 @@ def cmd_start(store: DailyStore) -> int:
     return 0
 
 
-def cmd_add(store: DailyStore, text: str, kind: str, cmd: str) -> int:
+def cmd_add(store: DailyStore, task_cmd: str, name: str) -> int:
     today = date.today()
     payload = store.load_or_create(today)
-    payload = add_task(payload, text, kind=kind, command=cmd)
+    text = name.strip() or task_cmd.strip()
+    payload = add_task(payload, text=text, command=task_cmd)
     store.save(today, payload)
     task = payload["tasks"][-1]
     print(f"Added task #{task['id']}: {text}")
-    if task.get("kind") == "command":
-        print(f"Command: {task.get('command')}")
+    print(f"Command: {task.get('command')}")
     return 0
 
 
@@ -99,14 +92,15 @@ def cmd_list(store: DailyStore) -> int:
     return 0
 
 
-def cmd_run(store: DailyStore, run_all: bool, limit: int, timeout: int) -> int:
+def cmd_run(store: DailyStore, limit: int, timeout: int) -> int:
     today = date.today()
     payload = store.load_or_create(today)
+    run_all = limit <= 0
     payload, results = execute_pending_commands(
         payload,
         cwd=Path.cwd(),
         run_all=run_all,
-        limit=max(limit, 1),
+        limit=max(limit, 1) if not run_all else 1,
         timeout_seconds=max(timeout, 1),
     )
     store.save(today, payload)
@@ -144,7 +138,7 @@ def main() -> int:
     if args.command == "start":
         return cmd_start(store)
     if args.command == "add":
-        return cmd_add(store, args.text, args.kind, args.cmd)
+        return cmd_add(store, args.task_cmd, args.name)
     if args.command == "note":
         return cmd_note(store, args.text)
     if args.command == "done":
@@ -152,7 +146,7 @@ def main() -> int:
     if args.command == "list":
         return cmd_list(store)
     if args.command == "run":
-        return cmd_run(store, args.all, args.limit, args.timeout)
+        return cmd_run(store, args.limit, args.timeout)
     if args.command == "review":
         return cmd_review(store)
 
