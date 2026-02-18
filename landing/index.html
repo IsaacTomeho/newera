@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MergeGuard - Verify AI Code Before It Ships</title>
+    <meta
+      name="description"
+      content="MergeGuard verifies AI-generated code with test coverage checks, risk scoring, and PR insights before merge."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="page">
+      <section class="hero">
+        <p class="pill">AI Code Verification for Engineering Teams</p>
+        <h1>Ship AI-assisted code with confidence, not guesswork.</h1>
+        <p class="subtitle">
+          MergeGuard catches risky AI-generated diffs before merge with automated test generation,
+          PR risk heatmaps, and trust scoring.
+        </p>
+        <div class="cta-row">
+          <a href="#waitlist" class="btn btn-primary">Join Pilot Waitlist</a>
+          <a href="#pricing" class="btn btn-secondary">See Pricing</a>
+        </div>
+        <p class="meta" id="variant-badge">Pricing experiment: loading...</p>
+      </section>
+
+      <section class="proof">
+        <article>
+          <h2>Why now</h2>
+          <p>
+            Teams are adopting AI coding assistants fast, but trust in generated output remains low.
+            MergeGuard turns that trust gap into a measurable quality workflow.
+          </p>
+        </article>
+        <article>
+          <h2>What changes</h2>
+          <p>
+            Every AI-touched pull request gets a verification score with prioritized alerts: missing
+            tests, brittle logic patterns, and high-risk file hotspots.
+          </p>
+        </article>
+      </section>
+
+      <section class="features" id="features">
+        <h2>Built for real review bottlenecks</h2>
+        <div class="grid">
+          <article>
+            <h3>Auto-test drafts</h3>
+            <p>Generate targeted tests for AI-modified files and highlight untested branches.</p>
+          </article>
+          <article>
+            <h3>PR risk heatmap</h3>
+            <p>Visual score based on code churn, complexity spikes, and historical regression zones.</p>
+          </article>
+          <article>
+            <h3>Policy checks</h3>
+            <p>Run lint, type, and security policy checks before reviewers spend cycle time.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="pricing" id="pricing" aria-live="polite">
+        <h2>Simple pilot pricing</h2>
+        <div class="card" id="pricing-card">
+          <p class="plan" id="plan-name">Loading...</p>
+          <p class="price" id="plan-price">$--</p>
+          <p class="plan-note" id="plan-note"></p>
+          <ul>
+            <li>GitHub app onboarding</li>
+            <li>AI PR verification reports</li>
+            <li>Weekly quality and velocity summary</li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="waitlist" id="waitlist">
+        <h2>Request early access</h2>
+        <p>Tell us about your team and we will reach out for a 2-week pilot.</p>
+        <form id="waitlist-form" class="form">
+          <label>
+            Work email
+            <input type="email" name="email" required placeholder="name@company.com" />
+          </label>
+          <label>
+            Company
+            <input type="text" name="company" required placeholder="Acme Labs" />
+          </label>
+          <label>
+            Team size
+            <select name="teamSize" required>
+              <option value="" selected disabled>Select range</option>
+              <option>1-10 engineers</option>
+              <option>11-30 engineers</option>
+              <option>31-100 engineers</option>
+              <option>100+ engineers</option>
+            </select>
+          </label>
+          <label>
+            Biggest AI code risk today
+            <textarea name="pain" rows="4" required placeholder="Example: hidden regressions in edge-case logic"></textarea>
+          </label>
+          <input type="hidden" name="variant" id="variant-input" />
+          <button type="submit" class="btn btn-primary">Join Waitlist</button>
+          <p class="form-status" id="form-status" role="status"></p>
+        </form>
+      </section>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>
