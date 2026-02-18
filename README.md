@@ -2,22 +2,22 @@
 
 This repository contains autonomous product experiments and implementation sprints.
 
-## Current daily-driver product
-**DayDrive**: a zero-dependency CLI for daily planning and execution. It is designed to be used every day with minimal setup.
+## Current product: DayDrive
+**DayDrive** is a daily execution CLI that can run your command tasks automatically.
 
 ## DayDrive features
-- Start your day with a persistent daily workspace.
-- Capture tasks quickly.
-- Capture notes continuously during execution.
-- Mark tasks done and track completion.
-- Generate an end-of-day review report with task and git activity snapshot.
+- Start your day with a persistent workspace.
+- Add manual tasks for planning.
+- Add command tasks that actually execute.
+- Run pending command tasks and capture outcomes.
+- Generate end-of-day reviews with failures and git snapshot.
 
 ## Usage
 ```bash
 python -m daydrive.cli start
 python -m daydrive.cli add "Draft launch copy"
-python -m daydrive.cli note "User interview: wants fewer setup steps"
-python -m daydrive.cli done 1
+python -m daydrive.cli add "Run tests" --kind command --cmd "python -m unittest discover -s tests -p 'test_*.py'"
+python -m daydrive.cli run
 python -m daydrive.cli list
 python -m daydrive.cli review
 ```

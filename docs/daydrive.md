@@ -1,17 +1,26 @@
 # DayDrive
 
-DayDrive is a daily execution CLI designed for low-friction personal operation.
+DayDrive is now an execution CLI, not just a tracker.
 
-## Why this pivot
-The previous concept was infrastructure-heavy. DayDrive is intentionally simple and immediately useful every day.
+## Core behavior
+- Manual tasks for planning and tracking.
+- Command tasks that can run automatically.
+- Persistent day logs and review reports.
 
 ## Commands
 - `python -m daydrive.cli start`
-- `python -m daydrive.cli add "Finalize onboarding copy"`
-- `python -m daydrive.cli note "Customer mentioned confusing setup screen"`
-- `python -m daydrive.cli done 1`
-- `python -m daydrive.cli list`
+- `python -m daydrive.cli add "Write release note"`
+- `python -m daydrive.cli add "Run tests" --kind command --cmd "python -m unittest discover -s tests -p 'test_*.py'"`
+- `python -m daydrive.cli run`
+- `python -m daydrive.cli run --all`
+- `python -m daydrive.cli done 2`
 - `python -m daydrive.cli review`
+
+## What `run` does
+- Finds pending command tasks.
+- Executes each command in current working directory.
+- Records return code and output tail.
+- Marks task `done` on success or `failed` on non-zero exit.
 
 ## Storage
 By default DayDrive writes to `~/.daydrive`:
@@ -19,9 +28,3 @@ By default DayDrive writes to `~/.daydrive`:
 - `reports/YYYY-MM-DD-review.md`
 
 Set a custom location with `DAYDRIVE_HOME`.
-
-## Daily workflow
-1. Run `start` in the morning.
-2. Capture tasks and notes all day (`add`, `note`).
-3. Mark progress with `done`.
-4. Run `review` at end of day to produce a compact daily report.

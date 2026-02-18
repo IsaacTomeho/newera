@@ -33,7 +33,9 @@ class DailyStore:
         self.ensure()
         path = self.day_path(day)
         if path.exists():
-            return json.loads(path.read_text(encoding="utf-8"))
+            payload = json.loads(path.read_text(encoding="utf-8"))
+            normalize_payload(payload)
+            return payload
 
         payload = {
             "date": day.isoformat(),
@@ -50,12 +52,40 @@ class DailyStore:
         self.day_path(day).write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
 
 
-def add_task(payload: dict, text: str) -> dict:
+def normalize_payload(payload: dict) -> dict:
+    payload.setdefault("tasks", [])
+    payload.setdefault("notes", [])
+
+    for task in payload["tasks"]:
+        task.setdefault("kind", "manual")
+        task.setdefault("command", "")
+
+        done_flag = bool(task.get("done", False))
+        if "status" not in task:
+            task["status"] = "done" if done_flag else "pending"
+
+        # Keep backward-compatibility with old structure.
+        task["done"] = task["status"] == "done"
+        task.setdefault("created_at", datetime.now().isoformat(timespec="seconds"))
+
+    return payload
+
+
+def add_task(payload: dict, text: str, kind: str = "manual", command: str = "") -> dict:
+    normalize_payload(payload)
     next_id = max((task["id"] for task in payload["tasks"]), default=0) + 1
+
+    command_text = command.strip()
+    if kind == "command" and not command_text:
+        command_text = text.strip()
+
     payload["tasks"].append(
         {
             "id": next_id,
             "text": text.strip(),
+            "kind": kind,
+            "command": command_text,
+            "status": "pending",
             "done": False,
             "created_at": datetime.now().isoformat(timespec="seconds"),
         }
@@ -64,6 +94,7 @@ def add_task(payload: dict, text: str) -> dict:
 
 
 def add_note(payload: dict, text: str) -> dict:
+    payload.setdefault("notes", [])
     payload["notes"].append(
         {
             "text": text.strip(),
@@ -74,8 +105,10 @@ def add_note(payload: dict, text: str) -> dict:
 
 
 def mark_done(payload: dict, task_id: int) -> tuple[dict, bool]:
+    normalize_payload(payload)
     for task in payload["tasks"]:
         if task["id"] == task_id:
+            task["status"] = "done"
             task["done"] = True
             task["done_at"] = datetime.now().isoformat(timespec="seconds")
             return payload, True
@@ -83,20 +116,108 @@ def mark_done(payload: dict, task_id: int) -> tuple[dict, bool]:
 
 
 def summarize_tasks(payload: dict) -> tuple[int, int]:
+    normalize_payload(payload)
     total = len(payload["tasks"])
-    done = len([task for task in payload["tasks"] if task["done"]])
+    done = len([task for task in payload["tasks"] if task["status"] == "done"])
     return done, total
 
 
 def list_tasks(payload: dict) -> str:
+    normalize_payload(payload)
     if not payload["tasks"]:
         return "No tasks yet. Add one with: daydrive add \"task\""
 
+    icons = {"pending": " ", "running": "~", "done": "x", "failed": "!"}
     lines = []
     for task in payload["tasks"]:
-        status = "x" if task["done"] else " "
-        lines.append(f"[{status}] {task['id']}. {task['text']}")
+        status = task.get("status", "pending")
+        icon = icons.get(status, " ")
+        suffix = ""
+        if task.get("kind") == "command":
+            suffix = " [command]"
+        lines.append(f"[{icon}] {task['id']}. {task['text']}{suffix}")
     return "\n".join(lines)
+
+
+def execute_pending_commands(
+    payload: dict,
+    cwd: Path,
+    run_all: bool = False,
+    limit: int = 1,
+    timeout_seconds: int = 600,
+) -> tuple[dict, list[dict]]:
+    normalize_payload(payload)
+    results: list[dict] = []
+    executed = 0
+
+    for task in payload["tasks"]:
+        if task.get("kind") != "command":
+            continue
+        if task.get("status") not in {"pending", "failed"}:
+            continue
+        if not task.get("command"):
+            continue
+
+        if not run_all and executed >= limit:
+            break
+
+        task["status"] = "running"
+        task["started_at"] = datetime.now().isoformat(timespec="seconds")
+
+        try:
+            proc = subprocess.run(
+                task["command"],
+                shell=True,
+                cwd=cwd,
+                capture_output=True,
+                text=True,
+                check=False,
+                timeout=timeout_seconds,
+            )
+            stdout_tail = "\n".join(proc.stdout.splitlines()[-20:]).strip()
+            stderr_tail = "\n".join(proc.stderr.splitlines()[-20:]).strip()
+
+            ok = proc.returncode == 0
+            task["status"] = "done" if ok else "failed"
+            task["done"] = ok
+            if ok:
+                task["done_at"] = datetime.now().isoformat(timespec="seconds")
+
+            task["last_run"] = {
+                "returncode": proc.returncode,
+                "stdout_tail": stdout_tail,
+                "stderr_tail": stderr_tail,
+                "finished_at": datetime.now().isoformat(timespec="seconds"),
+            }
+            results.append(
+                {
+                    "id": task["id"],
+                    "text": task["text"],
+                    "returncode": proc.returncode,
+                    "status": task["status"],
+                }
+            )
+        except subprocess.TimeoutExpired:
+            task["status"] = "failed"
+            task["done"] = False
+            task["last_run"] = {
+                "returncode": -1,
+                "stdout_tail": "",
+                "stderr_tail": f"Command timed out after {timeout_seconds}s",
+                "finished_at": datetime.now().isoformat(timespec="seconds"),
+            }
+            results.append(
+                {
+                    "id": task["id"],
+                    "text": task["text"],
+                    "returncode": -1,
+                    "status": "failed",
+                }
+            )
+
+        executed += 1
+
+    return payload, results
 
 
 def _run_git(cwd: Path, args: list[str]) -> str:
@@ -118,8 +239,10 @@ def git_snapshot(cwd: Path) -> dict:
 
 
 def build_review(payload: dict, cwd: Path) -> str:
+    normalize_payload(payload)
     done, total = summarize_tasks(payload)
-    open_tasks = [task for task in payload["tasks"] if not task["done"]]
+    open_tasks = [task for task in payload["tasks"] if task["status"] in {"pending", "running"}]
+    failed_tasks = [task for task in payload["tasks"] if task["status"] == "failed"]
     notes = payload["notes"]
     git = git_snapshot(cwd)
 
@@ -129,12 +252,21 @@ def build_review(payload: dict, cwd: Path) -> str:
         "## Task Completion",
         f"- Completed: {done}/{total}",
         f"- Remaining: {max(total - done, 0)}",
+        f"- Failed: {len(failed_tasks)}",
         "",
         "## Remaining Tasks",
     ]
 
     if open_tasks:
         lines.extend([f"- {task['id']}. {task['text']}" for task in open_tasks])
+    else:
+        lines.append("- None")
+
+    lines.extend(["", "## Failed Task Runs"])
+    if failed_tasks:
+        for task in failed_tasks:
+            error = task.get("last_run", {}).get("stderr_tail", "")
+            lines.append(f"- {task['id']}. {task['text']} ({error or 'no stderr captured'})")
     else:
         lines.append("- None")
 
@@ -154,6 +286,7 @@ def build_review(payload: dict, cwd: Path) -> str:
 
     if git["today_commits"]:
         lines.append("- Recent commits:")
-        lines.extend([f"  - {line}" for line in git["today_commits"]])
+        for line in git["today_commits"]:
+            lines.append(f"  - {line}")
 
     return "\n".join(lines) + "\n"
