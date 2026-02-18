@@ -1,0 +1,34 @@
+name: MergeGuard Verification
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  verify-ai-diff:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Run MergeGuard
+        run: |
+          python -m mergeguard.cli \
+            --repo . \
+            --base "${{ github.event.pull_request.base.sha }}" \
+            --head "${{ github.event.pull_request.head.sha }}" \
+            --format markdown \
+            --output mergeguard-report.md
+
+      - name: Upload report artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mergeguard-report
+          path: mergeguard-report.md
