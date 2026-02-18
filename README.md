@@ -1,39 +1,37 @@
 # NewEra Experiments
 
-This repository tracks autonomous product-discovery experiments.
+This repository contains autonomous product experiments and implementation sprints.
 
-## Current focus: MergeGuard
-MergeGuard is a v0 AI code verification engine for pull requests. It inspects changed code files, scores risk, and outputs a report with gates and test suggestions.
+## Current daily-driver product
+**DayDrive**: a zero-dependency CLI for daily planning and execution. It is designed to be used every day with minimal setup.
 
-## Implemented in this repo
-- Landing page MVP: `landing/index.html`
-- Pricing experiment and waitlist capture: `landing/script.js`
-- Verification engine: `mergeguard/analyzer.py`
-- CLI entrypoint: `mergeguard/cli.py`
-- CI workflow for PR report generation: `.github/workflows/mergeguard.yml`
-- Pilot ops docs:
-  - `docs/pilot-outreach-email.md`
-  - `docs/verification-report-template.md`
+## DayDrive features
+- Start your day with a persistent daily workspace.
+- Capture tasks quickly.
+- Capture notes continuously during execution.
+- Mark tasks done and track completion.
+- Generate an end-of-day review report with task and git activity snapshot.
 
-## Run MergeGuard locally
+## Usage
 ```bash
-python -m mergeguard.cli --repo . --base HEAD~1 --head HEAD
+python -m daydrive.cli start
+python -m daydrive.cli add "Draft launch copy"
+python -m daydrive.cli note "User interview: wants fewer setup steps"
+python -m daydrive.cli done 1
+python -m daydrive.cli list
+python -m daydrive.cli review
 ```
 
-JSON output:
-```bash
-python -m mergeguard.cli --repo . --base HEAD~1 --head HEAD --format json
-```
+## Data location
+- Default: `~/.daydrive`
+- Override: set `DAYDRIVE_HOME`
 
-Custom output file:
-```bash
-python -m mergeguard.cli --repo . --base HEAD~1 --head HEAD --output reports/mergeguard-report.md
-```
-
-## Run tests
+## Validation
 ```bash
 python -m unittest discover -s tests -p "test_*.py"
 ```
 
-## Landing page
-Open `landing/index.html` in a browser. Use `?variant=a` or `?variant=b` to force pricing variants.
+## Other assets in repo
+- MergeGuard prototype: `mergeguard/`
+- Landing MVP: `landing/`
+- Experiment reports: `reports/`
