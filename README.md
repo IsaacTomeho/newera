@@ -33,5 +33,5 @@ python -m unittest discover -s tests -p "test_*.py"
 
 ## Other assets in repo
 - MergeGuard prototype: `mergeguard/`
-- Landing MVP: `landing/`
+- Landing MVP + local experiment telemetry console: `landing/`
 - Experiment reports: `reports/`

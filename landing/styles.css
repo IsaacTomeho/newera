@@ -29,7 +29,8 @@ body {
 .features,
 .waitlist,
 .pricing,
-.proof {
+.proof,
+.experiment-console {
   background: var(--card);
   border: 1px solid var(--line);
   border-radius: 18px;
@@ -133,8 +134,16 @@ button {
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 }
 
+.experiment-console .grid {
+  display: grid;
+  gap: 0.8rem;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  margin-bottom: 0.9rem;
+}
+
 .features article,
-.proof article {
+.proof article,
+.experiment-console article {
   border: 1px solid var(--line);
   background: #fff;
   border-radius: 14px;
@@ -159,6 +168,12 @@ button {
 .price {
   font-size: 2rem;
   margin: 0.2rem 0;
+}
+
+.metric {
+  margin: 0;
+  font-size: 1.8rem;
+  font-weight: 700;
 }
 
 ul {
@@ -200,7 +215,8 @@ select {
   .features,
   .waitlist,
   .pricing,
-  .proof {
+  .proof,
+  .experiment-console {
     padding: 1.7rem;
   }
 }

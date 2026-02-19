@@ -25,9 +25,10 @@
           MergeGuard catches risky AI-generated diffs before merge with automated test generation,
           PR risk heatmaps, and trust scoring.
         </p>
+        <p class="meta" id="message-badge">Message experiment: loading...</p>
         <div class="cta-row">
-          <a href="#waitlist" class="btn btn-primary">Join Pilot Waitlist</a>
-          <a href="#pricing" class="btn btn-secondary">See Pricing</a>
+          <a href="#waitlist" class="btn btn-primary" data-cta="waitlist">Join Pilot Waitlist</a>
+          <a href="#pricing" class="btn btn-secondary" data-cta="pricing">See Pricing</a>
         </div>
         <p class="meta" id="variant-badge">Pricing experiment: loading...</p>
       </section>
@@ -111,6 +112,35 @@
           <button type="submit" class="btn btn-primary">Join Waitlist</button>
           <p class="form-status" id="form-status" role="status"></p>
         </form>
+      </section>
+
+      <section class="experiment-console" id="experiment-console">
+        <h2>Experiment Console</h2>
+        <p class="subtitle">
+          Local telemetry for this MVP only. Use it to inspect funnel behavior before wiring a backend.
+        </p>
+        <div class="grid">
+          <article>
+            <h3>Visits</h3>
+            <p class="metric" id="metric-views">0</p>
+          </article>
+          <article>
+            <h3>CTA Clicks</h3>
+            <p class="metric" id="metric-cta">0</p>
+          </article>
+          <article>
+            <h3>Waitlist Submits</h3>
+            <p class="metric" id="metric-submits">0</p>
+          </article>
+          <article>
+            <h3>Submit Rate</h3>
+            <p class="metric" id="metric-rate">0%</p>
+          </article>
+        </div>
+        <div class="cta-row">
+          <button type="button" class="btn btn-secondary" id="export-json">Export JSON</button>
+          <button type="button" class="btn btn-secondary" id="reset-metrics">Reset Metrics</button>
+        </div>
       </section>
     </main>
 
